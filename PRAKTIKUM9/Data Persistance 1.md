@@ -41,7 +41,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
        </application>
    </manifest>
    
-3. MenuRepoditory.kt
+2. MenuRepoditory.kt
    ~~~kt
    package com.example.jospar.data
 
@@ -267,7 +267,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           )
       }
    
-5. OrderPreferences.kt
+3. OrderPreferences.kt
    ~~~kt
    package com.example.jospar.data
 
@@ -317,7 +317,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
               }
       }
    
-7. Cartitem.kt
+4. CartItem.kt
    ~~~kt
    package com.example.jospar.model
 
@@ -337,7 +337,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           var quantity by mutableIntStateOf(quantity)
       }
    
-9. MenuItem.kt
+5. MenuItem.kt
     ~~~kt
     package com.example.jospar.model
 
@@ -364,7 +364,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           val favorite: Boolean = false
       )
     
-11. AppNavigation.kt
+6. AppNavigation.kt
     ~~~kt
     package com.example.jospar.navigation
 
@@ -495,7 +495,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           }
       }
     
-13. ApiService.kt
+7. ApiService.kt
     ~~~kt
     package com.example.jospar.network
 
@@ -518,7 +518,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           ): Response<ResponseBody>
       }
     
-15. RetrofitInstance.kt
+8. RetrofitInstance.kt
     ~~~kt
     package com.example.jospar.network
 
@@ -542,7 +542,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           }
       }
     
-17. BottomBar.kt
+9. BottomBar.kt
     ~~~kt
     package com.example.jospar.ui.component
 
@@ -681,7 +681,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           }
       }
     
-19. MenuCard.kt
+10. MenuCard.kt
     ~~~kt
     package com.example.jospar.ui.component
 
@@ -835,7 +835,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           }
       }
     
-21. CartScreen.kt
+11. CartScreen.kt
     ~~~kt
     package com.example.jospar.ui.screen.cart
 
@@ -1186,7 +1186,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           }
       }
     
-23. CheckoutScreen.kt
+12. CheckoutScreen.kt
     ~~~kt
     package com.example.jospar.ui.screen.checkout
 
@@ -1523,7 +1523,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           }
       }
     
-25. DetailScreen.kt
+13. DetailScreen.kt
     ~~~kt
     package com.example.jospar.ui.screen.detail
 
@@ -1829,7 +1829,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           }
       }
     
-27. HomeScreen.kt
+14. HomeScreen.kt
     ~~~kt
     package com.example.jospar.ui.screen.home
 
@@ -2033,7 +2033,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           }
       }
     
-29. PaymentSuccessScreen.kt
+15. PaymentSuccessScreen.kt
     ~~~kt
     package com.example.jospar.ui.screen.payment
 
@@ -2111,7 +2111,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           }
       }
     
-31. SplashScreen.kt
+16. SplashScreen.kt
     ~~~kt
     package com.example.jospar.ui.screen.splash
 
@@ -2230,7 +2230,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           }
       }
     
-33. SuccessScreen.kt
+17. SuccessScreen.kt
     ~~~kt
     package com.example.jospar.ui.screen.success
 
@@ -2337,7 +2337,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           }
       }
     
-35. TrackingScreen.kt
+18. TrackingScreen.kt
     ~~~kt
     package com.example.jospar.ui.screen.tracking
 
@@ -2617,7 +2617,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           }
       }
 
-37. Color.kt
+19. Color.kt
     ~~~kt
     package com.example.jospar.ui.theme
 
@@ -2643,7 +2643,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
       
       val BorderColor = Color(0xFF4A3B33)
     
-39. Theme.kt
+20. Theme.kt
     ~~~kt
     package com.example.jospar.ui.theme
 
@@ -2698,7 +2698,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           )
       }
 
-41. Type.kt
+21. Type.kt
     ~~~kt
     package com.example.jospar.ui.theme
 
@@ -2759,7 +2759,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           )
       )
     
-43. MenuViewModel.kt
+22. MenuViewModel.kt
     ~~~kt
     package com.example.jospar.viewmodel
 
@@ -2910,7 +2910,7 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
           }
       }
 
-45. MainActivity.kt
+23. MainActivity.kt
     ~~~kt
     package com.example.jospar
 
