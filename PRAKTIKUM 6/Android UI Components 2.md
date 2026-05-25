@@ -1,6 +1,6 @@
 # Tugas Praktikum 6: Android UI Components 2
 
-## Kelompok 6:
+## Kelompok 5:
 1. Azfa Rahma Putra Susanto (L0324008)
 2. Hammam Ibnu Adi'Abdillah (L0324015)
 3. Indra Fata Azhari L0324017)
