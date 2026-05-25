@@ -10,1073 +10,686 @@ Jadi dari project sebelumnya ada beberapa perubahan yang banyak merubah struktur
 ## Source Code yang digunakan:
 
 ###
-1. com.example.josparcoffee/data/Cart.kt
-   ~~~kt
-    package com.example.josparcoffee.data
-    
-    import androidx.compose.runtime.mutableStateListOf
-    import androidx.compose.runtime.mutableStateOf
-    import androidx.compose.runtime.getValue
-    import androidx.compose.runtime.setValue
-    
-    class CartItem(
-        val item: MenuItem,
-        val variant: String,
-        quantity: Int = 1
-    ) {
-        var quantity by mutableStateOf(quantity)
-    }
-    
-    object CartManager {
-        val cartItems = mutableStateListOf<CartItem>()
-    
-        fun addToCart(item: MenuItem, variant: String) {
-            val existing = cartItems.find {
-                it.item.name == item.name && it.variant == variant
-            }
-    
-            if (existing != null) {
-                existing.quantity++
-            } else {
-                cartItems.add(CartItem(item, variant))
-            }
-        }
-    
-        fun removeItem(cartItem: CartItem) {
-            cartItems.remove(cartItem)
-        }
-    
-        fun increase(cartItem: CartItem) {
-            cartItem.quantity++
-        }
-    
-        fun decrease(cartItem: CartItem) {
-            if (cartItem.quantity >1) {
-                cartItem.quantity--
-            } else {
-                cartItems.remove(cartItem)
-            }
-        }
-    
-        fun getTotal(): Int {
-            return cartItems.sumOf {
-                val price = when (it.variant) {
-                    "Hot" -> it.item.priceHot?.toIntOrNull() ?: 0
-                    "Ice" -> it.item.priceIce?.toIntOrNull() ?: 0
-                    else -> it.item.price?.toIntOrNull() ?: 0
-                }
-                price * it.quantity
-            }
-        }
-    }
+1. AndroidManifest.xml
+   ~~~xml
+   <?xml version="1.0" encoding="utf-8"?>
+   <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-   
-2. com.example.josparcoffee/data/Coffee.kt
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <application
+        android:usesCleartextTraffic="true"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.JOSPAR">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.JOSPAR">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+   </manifest>
+3. MenuRepoditory.kt
    ~~~kt
-    package com.example.josparcoffee.data
-    
-    import com.example.josparcoffee.R
-    
-    data class MenuItem(
-        val name: String,
-        val price: String?,
-        val priceHot: String?,
-        val priceIce: String?,
-        val category: String?,
-        val imageRes: Int
-    )
-    
+   package com.example.jospar.data
+
+   import com.example.jospar.R
+   import com.example.jospar.model.MenuItem
+
+   object MenuRepository{
+
     val menuList = listOf(
-    
-        // Coffee Based
-        MenuItem("Cappuccino", null ,"22", "20", "Coffee", R.drawable.cappuccino),
-        MenuItem("Americano", null ,"18", "17", "Coffee",R.drawable.americano),
-        MenuItem("Mochaccino", null ,"22", "20", "Coffee",R.drawable.mochaccino),
-        MenuItem("Caramel Latte",null ,"20", "20", "Coffee",R.drawable.caramel_latte),
-        MenuItem("Vanilla Latte", null ,"20", "20", "Coffee",R.drawable.vanilla_latte),
-    
-        // Milk Based
-        MenuItem("Chocolate", null ,"19", "17", "Milk",R.drawable.chocolate),
-        MenuItem("Matcha", null ,"19", "17", "Milk",R.drawable.matcha),
-        MenuItem("Milo Dino Favorito",null ,"19", "17", "Milk",R.drawable.milo),
-        MenuItem("Red Velvet", null ,"19", "17", "Milk",R.drawable.redvelvet),
-    
-        // Tea Based
-        MenuItem("Jasmine Tea", null ,"18", "18", "Tea",R.drawable.japanese_tea),
-        MenuItem("Lemon Tea", null ,null, "18", "Tea",R.drawable.lemon_tea),
-        MenuItem("Thai Tea", null ,null, "18", "Tea",R.drawable.thai_tea),
-        MenuItem("Lychee Tea", null ,null, "18", "Tea",R.drawable.lychee_tea),
-    
-        // Snack
-        MenuItem("French Fries", "15" ,null, null, "Makanan Ringan",R.drawable.french_fries),
-        MenuItem("Tahu Baso", "15",null, null, "Makanan Ringan",R.drawable.tahu_bakso),
-    
-        // Main Course
-        MenuItem("Chicken Katsu", "25", null, null, "Makanan Berat",R.drawable.chicken_katsu),
-        MenuItem("Chicken Sambal Matah", "25", null, null, "Makanan Berat",R.drawable.chicken_sambel_matah),
-        MenuItem("Chicken Blackpepper", "25", null, null, "Makanan Berat",R.drawable.chicken_blackpaper),
-        MenuItem("Nasi Goreng Ayam", "20", null, null,"Makanan Berat",R.drawable.nasi_goreng)
-    )
 
-  
-3. com.example.josparcoffee/navigation/AppNavigation.kt
-   ~~~kt   
-    package com.example.josparcoffee.navigation
-    
-    import androidx.compose.runtime.*
-    import androidx.compose.runtime.mutableStateListOf
-    import androidx.compose.runtime.staticCompositionLocalOf
-    import com.example.josparcoffee.data.MenuItem
-    import com.example.josparcoffee.ui.screen.home.HomeScreen
-    import com.example.josparcoffee.ui.screen.menu.MenuScreen
-    import com.example.josparcoffee.ui.screen.profile.ProfileScreen
-    import com.example.josparcoffee.ui.screen.detail.DetailScreen
-    import com.example.josparcoffee.ui.screen.cart.CartScreen
-    import com.example.josparcoffee.ui.screen.checkout.CheckoutScreen
-    
-    sealed class Routes {
-        object Home : Routes()
-        object Menu : Routes()
-        object Profile : Routes()
-        object Cart : Routes()
-        object Checkout : Routes()
-        data class Detail(val item: MenuItem) : Routes()
-    }
-    
-    val LocalBackStack = staticCompositionLocalOf<MutableList<Routes>> {
-        error("BackStack belum ada")
-    }
-    
-    @Composable
-    fun AppNavigation() {
-        val backStack = remember {
-            mutableStateListOf<Routes>(Routes.Home)
-        }
-    
-        CompositionLocalProvider(LocalBackStack provides backStack) {
-            NavDisplay()
-        }
-    }
-    
-    @Composable
-    fun NavDisplay() {
-        val backStack = LocalBackStack.current
-        val current = backStack.last()
-    
-        when (current) {
-            is Routes.Home -> HomeScreen()
-            is Routes.Menu -> MenuScreen()
-            is Routes.Profile -> ProfileScreen()
-            is Routes.Cart -> CartScreen()
-            is Routes.Detail -> DetailScreen(item = current.item)
-            is Routes.Checkout -> CheckoutScreen()
-        }
-    }
+        // COFFEE
 
-   
-4. com.example.josparcoffee/ui/component/MenuItemCard.kt
-   ~~~kt
-    package com.example.josparcoffee.ui.component
-    
-    import androidx.compose.foundation.Image
-    import androidx.compose.foundation.clickable
-    import androidx.compose.foundation.layout.*
-    import androidx.compose.foundation.shape.RoundedCornerShape
-    import androidx.compose.material3.*
-    import androidx.compose.runtime.Composable
-    import androidx.compose.ui.Modifier
-    import androidx.compose.ui.unit.dp
-    import androidx.compose.ui.layout.ContentScale
-    import androidx.compose.ui.res.painterResource
-    import androidx.compose.ui.Alignment
-    import androidx.compose.ui.graphics.Color
-    import androidx.compose.ui.text.font.FontWeight
-    import com.example.josparcoffee.data.MenuItem
-    
-    @Composable
-    fun MenuItemCard(
-        item: MenuItem,
-        onClick: () -> Unit
-    ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 6.dp)
-                .clickable { onClick() },
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-    
-                Image(
-                    painter = painterResource(id = item.imageRes),
-                    contentDescription = item.name,
-                    modifier = Modifier.size(70.dp),
-                    contentScale = ContentScale.Crop
-                )
-    
-                Spacer(modifier = Modifier.width(12.dp))
-    
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(item.name, fontWeight = FontWeight.Bold)
-                }
-    
-                Column(horizontalAlignment = Alignment.End) {
-                    item.priceHot?.let { Text("Hot: $it.k") }
-                    item.priceIce?.let { Text("Ice: $it.k") }
-                    item.price?.let { Text("$it.k") }
-                }
-            }
-        }
-    }
+        MenuItem(
+            id = 1,
+            name = "Cappuccino",
+            description = "Rich espresso with creamy milk foam.",
+            priceHot = "22",
+            priceIce = "20",
+            category = "Coffee",
+            imageRes = R.drawable.cappuccino,
+            rating = 4.8
+        ),
 
+        MenuItem(
+            id = 2,
+            name = "Americano",
+            description = "Bold espresso with smooth finish.",
+            priceHot = "18",
+            priceIce = "17",
+            category = "Coffee",
+            imageRes = R.drawable.americano,
+            rating = 4.6
+        ),
 
-5. com.example.josparcoffee/ui/screen/cart/CartScreen.kt
-   ~~~kt
-    package com.example.josparcoffee.ui.screen.cart
-    
-    import androidx.compose.foundation.layout.*
-    import androidx.compose.foundation.lazy.*
-    import androidx.compose.material.icons.Icons
-    import androidx.compose.material.icons.filled.ArrowBack
-    import androidx.compose.material3.*
-    import androidx.compose.runtime.*
-    import androidx.compose.ui.Modifier
-    import androidx.compose.ui.unit.dp
-    import com.example.josparcoffee.data.*
-    import com.example.josparcoffee.navigation.*
-    
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun CartScreen() {
-    
-        var selectedItem by remember { mutableStateOf<CartItem?>(null) }
-        var showDialog by remember { mutableStateOf(false) }
-    
-        val backStack = LocalBackStack.current
-        val cartItems = CartManager.cartItems
-    
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Keranjang") },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            backStack.removeLastOrNull()
-                        }) {
-                            Icon(Icons.Default.ArrowBack, null)
-                        }
-                    }
-                )
-            }
-        ) { padding ->
-    
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-            ) {
-    
-                // LIST ITEM
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 8.dp)
-                ) {
-                    items(cartItems) { cartItem ->
-    
-                        val price = when (cartItem.variant) {
-                            "Hot" -> cartItem.item.priceHot
-                            "Ice" -> cartItem.item.priceIce
-                            else -> cartItem.item.price
-                        }?.toIntOrNull() ?: 0
-    
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 6.dp),
-                            elevation = CardDefaults.cardElevation(4.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-    
-                                Text(
-                                    text = cartItem.item.name,
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-    
-                                Text("Tipe: ${cartItem.variant}")
-                                Text("Harga: Rp $price.000")
-                                Text("Qty: ${cartItem.quantity}")
-                                Text("Subtotal: Rp ${price * cartItem.quantity}.000")
-    
-                                Spacer(modifier = Modifier.height(8.dp))
-    
-                                Row {
-    
-                                    Button(onClick = {
-                                        CartManager.increase(cartItem)
-                                    }) {
-                                        Text("+")
-                                    }
-    
-                                    Spacer(modifier = Modifier.width(8.dp))
-    
-                                    Button(onClick = {
-                                        CartManager.decrease(cartItem)
-                                    }) {
-                                        Text("-")
-                                    }
-    
-                                    Spacer(modifier = Modifier.width(8.dp))
-    
-                                    Button(onClick = {
-                                        selectedItem = cartItem
-                                        showDialog = true
-                                    }) {
-                                        Text("Hapus")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-    
-                // CHECKOUT 
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    elevation = CardDefaults.cardElevation(8.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-    
-                        Text(
-                            "Total: Rp ${CartManager.getTotal()}.000",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-    
-                        Spacer(modifier = Modifier.height(8.dp))
-    
-                        Button(
-                            onClick = {
-                                backStack.add(Routes.Checkout)
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Checkout")
-                        }
-                    }
-                }
-            }
-        }
-    
-        // ALERT DIALOG
-        if (showDialog && selectedItem != null) {
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text("Hapus Item") },
-                text = { Text("Yakin mau hapus dari keranjang?") },
-                confirmButton = {
-                    Button(onClick = {
-                        CartManager.removeItem(selectedItem!!)
-                        showDialog = false
-                    }) {
-                        Text("Hapus")
-                    }
-                },
-                dismissButton = {
-                    OutlinedButton(onClick = {
-                        showDialog = false
-                    }) {
-                        Text("Batal")
-                    }
-                }
-            )
-        }
-    }
+        MenuItem(
+            id = 3,
+            name = "Mochaccino",
+            description = "Chocolate espresso with creamy texture.",
+            priceHot = "22",
+            priceIce = "20",
+            category = "Coffee",
+            imageRes = R.drawable.mochaccino,
+            rating = 4.7
+        ),
 
+        MenuItem(
+            id = 4,
+            name = "Caramel Latte",
+            description = "Sweet caramel blended with espresso.",
+            priceHot = "20",
+            priceIce = "20",
+            category = "Coffee",
+            imageRes = R.drawable.caramel_latte,
+            rating = 4.9
+        ),
 
-6. com.example.josparcoffee/ui/screen/detail/DetailScreen.kt
-   ~~~kt
-    package com.example.josparcoffee.ui.screen.detail
-    
-    
-    import androidx.compose.animation.core.animateFloatAsState
-    import androidx.compose.animation.core.tween
-    import androidx.compose.foundation.Image
-    import androidx.compose.foundation.clickable
-    import androidx.compose.foundation.layout.*
-    import androidx.compose.material.icons.Icons
-    import androidx.compose.material.icons.filled.ArrowBack
-    import androidx.compose.material3.*
-    import androidx.compose.material3.ModalBottomSheet
-    import androidx.compose.material3.rememberModalBottomSheetState
-    import androidx.compose.runtime.*
-    import androidx.compose.ui.Alignment
-    import androidx.compose.ui.Modifier
-    import androidx.compose.ui.res.painterResource
-    import androidx.compose.ui.unit.dp
-    import kotlinx.coroutines.launch
-    import com.example.josparcoffee.data.MenuItem
-    import com.example.josparcoffee.data.CartManager
-    import com.example.josparcoffee.navigation.LocalBackStack
-    
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun DetailScreen(item: MenuItem) {
-    
-        // STATE
-        var showSheet by remember { mutableStateOf(false) }
-    
-        val snackbarHostState = remember { SnackbarHostState() }
-        val scope = rememberCoroutineScope()
-        val sheetState = rememberModalBottomSheetState()
-    
-        val backStack = LocalBackStack.current
-    
-        val cartItems = CartManager.cartItems
-        val isInCart = cartItems.any { it.item.name == item.name }
-    
-        val scale by animateFloatAsState(
-            targetValue = if (isInCart) 1.1f else 1f,
-            animationSpec = tween(300),
-            label = ""
+        MenuItem(
+            id = 5,
+            name = "Vanilla Latte",
+            description = "Smooth vanilla latte with fresh milk.",
+            priceHot = "20",
+            priceIce = "20",
+            category = "Coffee",
+            imageRes = R.drawable.vanilla_latte,
+            rating = 4.7
+        ),
+
+        // MILK
+
+        MenuItem(
+            id = 6,
+            name = "Chocolate",
+            description = "Creamy chocolate drink.",
+            priceHot = "19",
+            priceIce = "17",
+            category = "Milk",
+            imageRes = R.drawable.chocolate,
+            rating = 4.5
+        ),
+
+        MenuItem(
+            id = 7,
+            name = "Matcha",
+            description = "Premium japanese matcha latte.",
+            priceHot = "23",
+            priceIce = "22",
+            category = "Milk",
+            imageRes = R.drawable.matcha,
+            rating = 4.8
+        ),
+
+        MenuItem(
+            id = 8,
+            name = "Milo Dino Favorito",
+            description = "Sweet milo with crunchy topping.",
+            priceHot = "19",
+            priceIce = "18",
+            category = "Milk",
+            imageRes = R.drawable.milo,
+            rating = 4.6
+        ),
+
+        MenuItem(
+            id = 9,
+            name = "Red Velvet",
+            description = "Creamy red velvet signature drink.",
+            priceHot = "19",
+            priceIce = "17",
+            category = "Milk",
+            imageRes = R.drawable.redvelvet,
+            rating = 4.7
+        ),
+
+        // TEA
+
+        MenuItem(
+            id = 10,
+            name = "Jasmine Tea",
+            description = "Refreshing jasmine tea.",
+            priceHot = "20",
+            priceIce = "18",
+            category = "Tea",
+            imageRes = R.drawable.japanese_tea,
+            rating = 4.4
+        ),
+
+        MenuItem(
+            id = 11,
+            name = "Lemon Tea",
+            description = "Fresh lemon with iced tea.",
+            price = "18",
+            priceIce = "18",
+            category = "Tea",
+            imageRes = R.drawable.lemon_tea,
+            rating = 4.5
+        ),
+
+        MenuItem(
+            id = 12,
+            name = "Thai Tea",
+            description = "Authentic thai tea flavor.",
+            price = "18",
+            priceIce = "18",
+            category = "Tea",
+            imageRes = R.drawable.thai_tea,
+            rating = 4.6
+        ),
+
+        MenuItem(
+            id = 13,
+            name = "Lychee Tea",
+            description = "Sweet lychee infused tea.",
+            price = "18",
+            priceIce = "18",
+            category = "Tea",
+            imageRes = R.drawable.lychee_tea,
+            rating = 4.5
+        ),
+
+        // SNACK
+
+        MenuItem(
+            id = 14,
+            name = "French Fries",
+            description = "Crispy french fries.",
+            price = "15",
+            category = "Snack",
+            imageRes = R.drawable.french_fries,
+            rating = 4.3
+        ),
+
+        MenuItem(
+            id = 15,
+            name = "Tahu Baso",
+            description = "Savory tahu baso snack.",
+            price = "15",
+            category = "Snack",
+            imageRes = R.drawable.tahu_bakso,
+            rating = 4.4
+        ),
+
+        // MAIN COURSE
+
+        MenuItem(
+            id = 16,
+            name = "Chicken Katsu",
+            description = "Crispy chicken katsu with rice.",
+            price = "25",
+            category = "Main Course",
+            imageRes = R.drawable.chicken_katsu,
+            rating = 4.8
+        ),
+
+        MenuItem(
+            id = 17,
+            name = "Chicken Sambal Matah",
+            description = "Spicy sambal matah chicken.",
+            price = "25",
+            category = "Main Course",
+            imageRes = R.drawable.chicken_sambel_matah,
+            rating = 4.9
+        ),
+
+        MenuItem(
+            id = 18,
+            name = "Chicken Blackpepper",
+            description = "Blackpepper chicken special.",
+            price = "25",
+            category = "Main Course",
+            imageRes = R.drawable.chicken_blackpaper,
+            rating = 4.7
+        ),
+
+        MenuItem(
+            id = 19,
+            name = "Nasi Goreng Ayam",
+            description = "Indonesian fried rice with chicken.",
+            price = "20",
+            category = "Main Course",
+            imageRes = R.drawable.nasi_goreng,
+            rating = 4.6
         )
-    
-        // UI
-        Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            topBar = {
-                TopAppBar(
-                    title = { Text("Detail Menu") },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            backStack.removeLastOrNull()
-                        }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = null)
-                        }
-                    }
-                )
-            }
-        ) { padding ->
-    
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-    
-                // IMAGE
-                Image(
-                    painter = painterResource(id = item.imageRes),
-                    contentDescription = item.name,
-                    modifier = Modifier.size(200.dp)
-                )
-    
-                Spacer(modifier = Modifier.height(16.dp))
-    
-                // NAME
-                Text(
-                    text = item.name,
-                    style = MaterialTheme.typography.headlineMedium
-                )
-    
-                Spacer(modifier = Modifier.height(8.dp))
-    
-                // PRICE
-                item.priceHot?.let { Text("Hot: Rp $it.000") }
-                item.priceIce?.let { Text("Ice: Rp $it.000") }
-                item.price?.let { Text("Rp $it.000") }
-    
-                Spacer(modifier = Modifier.height(24.dp))
-    
-                // BUTTON
-                Button(
-                    onClick = {
-                        if (item.priceHot != null && item.priceIce != null) {
-                            showSheet = true
-                        } else {
-                            CartManager.addToCart(item, "-")
-    
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Menu ditambahkan ke keranjang")
-                            }
-                        }
-                    }
-                ) {
-                    Text("Tambah ke Keranjang")
-                }
-            }
-        }
-    
-        // MODERN BOTTOM SHEET
-        if (showSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showSheet = false },
-                sheetState = sheetState
-            ) {
-    
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-    
-                    Text(
-                        text = "Pilih Varian ",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-    
-                    Spacer(modifier = Modifier.height(16.dp))
-    
-                    // HOT
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                            .clickable {
-                                CartManager.addToCart(item, "Hot")
-                                showSheet = false
-    
-                                scope.launch {
-                                    snackbarHostState.showSnackbar("Hot ditambahkan ke keranjang")
-                                }
-                            }
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("Hot")
-                            Text("Rp ${item.priceHot ?: "-"}.000")
-                        }
-                    }
-    
-                    // ICE
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                            .clickable {
-                                CartManager.addToCart(item, "Ice")
-                                showSheet = false
-    
-                                scope.launch {
-                                    snackbarHostState.showSnackbar("Ice ditambahkan ke keranjang")
-                                }
-                            }
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("Ice")
-                            Text("Rp ${item.priceIce ?: "-"}.000")
-                        }
-                    }
-    
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
-            }
+    )
+   }
+   
+5. OrderPreferences.kt
+   ~~~kt
+   package com.example.jospar.data
+
+   import android.content.Context
+   import androidx.datastore.preferences.core.booleanPreferencesKey
+   import androidx.datastore.preferences.core.edit
+   import androidx.datastore.preferences.preferencesDataStore
+   import kotlinx.coroutines.flow.Flow
+   import kotlinx.coroutines.flow.map
+
+   private val Context.dataStore by preferencesDataStore(
+
+    name = "order_prefs"
+   )
+
+   class OrderPreferences(
+
+    private val context: Context
+
+   ) {
+
+    companion object {
+
+        val HAS_ORDER = booleanPreferencesKey(
+
+            "has_order"
+        )
+    }
+
+    suspend fun saveOrderStatus(
+
+        hasOrder: Boolean
+
+    ) {
+
+        context.dataStore.edit { preferences ->
+
+            preferences[HAS_ORDER] = hasOrder
         }
     }
 
+    val orderStatus: Flow<Boolean> =
 
-7. com.example.josparcoffee/ui/screen/home/HomeScreen.kt
-   ~~~kt
-    package com.example.josparcoffee.ui.screen.home
-    
-    import androidx.compose.foundation.Image
-    import androidx.compose.foundation.background
-    import androidx.compose.foundation.layout.*
-    import androidx.compose.material3.*
-    import androidx.compose.runtime.Composable
-    import androidx.compose.ui.Alignment
-    import androidx.compose.ui.Modifier
-    import androidx.compose.ui.graphics.Color
-    import androidx.compose.ui.layout.ContentScale
-    import androidx.compose.ui.res.painterResource
-    import androidx.compose.ui.unit.dp
-    import com.example.josparcoffee.R
-    import com.example.josparcoffee.navigation.*
-    
-    
-    @Composable
-    fun HomeScreen() {
-    
-        val backStack =  LocalBackStack.current
-    
-        Box(modifier = Modifier.fillMaxSize()) {
-    
-            // Background Image
-            Image(
-                painter = painterResource(id = R.drawable.background_home),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-    
-            // Overlay biar teks kebaca
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
-            )
-    
-            // Content
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-    
-                Text(
-                    "Selamat Datang di",
-                    color = Color.White
-                )
-    
-                Text(
-                    "Jospar Coffee",
-                    color = Color.White,
-                    style = MaterialTheme.typography.headlineLarge
-                )
-    
-                Spacer(modifier = Modifier.height(20.dp))
-    
-                Text(
-                    "Ngopi santai, kerja santuy ",
-                    color = Color.White
-                )
-    
-                Spacer(modifier = Modifier.height(40.dp))
-    
-                Button(onClick = { backStack.add(Routes.Menu) }) {
-                    Text("Lihat Menu")
-                }
-    
-                OutlinedButton(onClick = { backStack.add(Routes.Profile) }) {
-                    Text("Profile Coffee")
-                }
-            }
+        context.dataStore.data.map { preferences ->
+
+            preferences[HAS_ORDER] ?: false
         }
-    }
-
-
-8. com.example.josparcoffee/ui/screen/menu/MenuScreen.kt
+   }
+   
+7. Cartitem.kt
    ~~~kt
-    package com.example.josparcoffee.ui.screen.menu
+   package com.example.jospar.model
+
+   import androidx.compose.runtime.getValue
+   import androidx.compose.runtime.mutableIntStateOf
+   import androidx.compose.runtime.setValue
+
+   class CartItem(
+
+    val menu: MenuItem,
+
+    val selectedType: String?,
+
+    quantity: Int
+   ) {
+
+    var quantity by mutableIntStateOf(quantity)
+   }
+   
+9. MenuItem.kt
+    ~~~kt
+   package com.example.jospar.model
+
+   data class MenuItem(
+
+    val id: Int,
+
+    val name: String,
+
+    val description: String,
+
+    val price: String? = null,
+
+    val priceHot: String? = null,
+
+    val priceIce: String? = null,
+
+    val category: String,
+
+    val imageRes: Int,
+
+    val rating: Double,
+
+    val favorite: Boolean = false
+   )
     
-    import androidx.compose.foundation.layout.*
-    import androidx.compose.foundation.lazy.LazyColumn
-    import androidx.compose.foundation.lazy.items
+11. AppNavigation.kt
+    ~~~kt
+     package com.example.jospar.navigation
+
+     import androidx.compose.runtime.Composable
+     import androidx.navigation.NavType
+     import androidx.navigation.compose.NavHost
+     import androidx.navigation.compose.composable
+     import androidx.navigation.compose.rememberNavController
+     import androidx.navigation.navArgument
+     import androidx.lifecycle.viewmodel.compose.viewModel
+     import com.example.jospar.viewmodel.MenuViewModel
+     import com.example.jospar.ui.screen.cart.CartScreen
+     import com.example.jospar.ui.screen.detail.DetailScreen
+     import com.example.jospar.ui.screen.home.HomeScreen
+     import com.example.jospar.ui.screen.splash.SplashScreen
+     import com.example.jospar.ui.screen.checkout.CheckoutScreen
+     import com.example.jospar.ui.screen.tracking.TrackingScreen
+     import com.example.jospar.ui.screen.payment.PaymentSuccessScreen
+   
+   
+     @Composable
+     fun AppNavigation(
+   
+       viewModel: MenuViewModel
+     ) {
+
+       val navController = rememberNavController()
+       val menuViewModel: MenuViewModel = viewModel()
+
+       NavHost(
+   
+           navController = navController,
+   
+           startDestination = "splash"
+   
+       ) {
+
+           composable("splash") {
+   
+               SplashScreen(navController)
+           }
+   
+           composable("home") {
+   
+               HomeScreen(
+   
+                   navController = navController,
+   
+                   viewModel = menuViewModel
+               )
+           }
+   
+           composable("cart") {
+   
+               CartScreen(
+   
+                   navController = navController,
+   
+                   viewModel = menuViewModel
+               )
+           }
+   
+           composable(
+   
+               route = "detail/{menuId}",
+   
+               arguments = listOf(
+   
+                   navArgument("menuId") {
+   
+                       type = NavType.IntType
+                   }
+               )
+   
+           ) { backStackEntry ->
+   
+               val menuId = backStackEntry.arguments
+                   ?.getInt("menuId") ?: 0
+   
+               DetailScreen(
+   
+                   navController = navController,
+                   menuId = menuId,
+   
+                   viewModel = menuViewModel
+               )
+           }
+   
+           composable("checkout") {
+   
+               CheckoutScreen(
+   
+                   navController = navController,
+                   viewModel = menuViewModel
+               )
+           }
+   
+           composable("tracking") {
+   
+               TrackingScreen(
+   
+                   navController = navController,
+                   viewModel = menuViewModel
+               )
+           }
+   
+           composable(
+   
+               route = "payment/{snapToken}"
+   
+           ) { backStackEntry ->
+   
+               val snapToken =
+                   backStackEntry.arguments
+                       ?.getString("snapToken") ?: ""
+   
+           }
+   
+           composable("payment_success") {
+   
+               PaymentSuccessScreen(navController)
+           }
+   
+           composable("splash") {
+   
+               SplashScreen(navController)
+           }
+       }
+    }
+    
+13. ApiService.kt
+    ~~~kt
+    package com.example.jospar.network
+
+    import okhttp3.ResponseBody
+    import retrofit2.Response
+    import retrofit2.http.GET
+    import retrofit2.http.Query
+   
+    interface ApiService {
+
+          @GET("create_transaction.php")
+          suspend fun createTransaction(
+      
+            @Query("amount")
+            amount: Int,
+      
+            @Query("items")
+            items: String
+      
+          ): Response<ResponseBody>
+      }
+    
+15. RetrofitInstance.kt
+    ~~~kt
+    package com.example.jospar.network
+
+    import retrofit2.Retrofit
+    import retrofit2.converter.gson.GsonConverterFactory
+      
+      object RetrofitInstance {
+      
+          private const val BASE_URL =
+              "http://10.0.2.2/jospar_backend/"
+      
+          val api: ApiService by lazy {
+      
+              Retrofit.Builder()
+                  .baseUrl(BASE_URL)
+                  .addConverterFactory(
+                      GsonConverterFactory.create()
+                  )
+                  .build()
+                  .create(ApiService::class.java)
+          }
+      }
+    
+17. BottomBar.kt
+    ~~~kt
+    package com.example.jospar.ui.component
+
+    import android.widget.Toast
+    import androidx.compose.ui.platform.LocalContext
+    import androidx.compose.foundation.layout.height
     import androidx.compose.material.icons.Icons
+    import androidx.compose.material.icons.filled.Home
+    import androidx.compose.material.icons.filled.List
     import androidx.compose.material.icons.filled.ShoppingCart
     import androidx.compose.material3.*
     import androidx.compose.runtime.Composable
     import androidx.compose.ui.Modifier
     import androidx.compose.ui.unit.dp
-    import com.example.josparcoffee.data.menuList
-    import com.example.josparcoffee.navigation.*
-    import com.example.josparcoffee.ui.component.MenuItemCard
-    
-    @OptIn(ExperimentalMaterial3Api::class)
+    import androidx.navigation.NavController
+    import com.example.jospar.viewmodel.MenuViewModel
+      
     @Composable
-    fun MenuScreen() {
-    
-        val backStack = LocalBackStack.current
-        val groupedMenu = menuList.groupBy { it.category.toString() }
-    
-        Scaffold(
-            topBar = {
-                TopAppBar(title = { Text("Menu Coffee") })
-            },
-            floatingActionButton = {
-                FloatingActionButton(onClick = {
-                    backStack.add(Routes.Cart)
-                }) {
-                    Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
-                }
-            }
-        ) { padding ->
-    
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp)
-            ) {
-    
-                groupedMenu.forEach { (category, items) ->
-    
-                    item {
-                        Text(category, style = MaterialTheme.typography.titleLarge)
-                        Divider()
-                    }
-    
-                    items(items) { item ->
-                        MenuItemCard(
-                            item = item,
-                            onClick = {
-                                backStack.add(Routes.Detail(item))
-                            }
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-
-9. com.example.josparcoffee/ui/screen/profile/ProfileScreen.kt
-    ~~~kt
-    package com.example.josparcoffee.ui.screen.profile
-    
-    import androidx.compose.foundation.layout.*
-    import androidx.compose.material3.*
-    import androidx.compose.runtime.Composable
-    import androidx.compose.ui.Alignment
-    import androidx.compose.ui.Modifier
-    import androidx.compose.ui.text.style.TextAlign
-    import androidx.compose.ui.unit.dp
-    import com.example.josparcoffee.navigation.LocalBackStack
-    
-    @Composable
-    fun ProfileScreen() {
-    
-        val backStack = LocalBackStack.current
-    
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-    
-            Text("Jospar Coffee", style = MaterialTheme.typography.headlineMedium)
-    
-            Spacer(modifier = Modifier.height(10.dp))
-    
-            Text("Ngopi santai, kerja santuy")
-    
-            Spacer(modifier = Modifier.height(10.dp))
-    
-            Text("Since 2026")
-    
-            Text(
-                "Lebih dari sekadar kopi. Jospar Coffee adalah tempat untuk berbagi cerita, ide, dan momen santai.",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .padding(horizontal = 24.dp, vertical = 12.dp)
-            )
-    
-            Button(onClick = {
-                backStack.removeLastOrNull()
-            }) {
-                Text("Kembali")
-            }
-        }
-    }
-
-
-10. com.example.josparcoffee/theme/Color.kt
-    ~~~kt
-    package com.example.josparcoffee.ui.theme
-    
-    import androidx.compose.ui.graphics.Color
-    
-    val Purple80 = Color(0xFFD0BCFF)
-    val PurpleGrey80 = Color(0xFFCCC2DC)
-    val Pink80 = Color(0xFFEFB8C8)
-    
-    val Purple40 = Color(0xFF6650a4)
-    val PurpleGrey40 = Color(0xFF625b71)
-    val Pink40 = Color(0xFF7D5260)
-
-
-11. com.example.josparcoffee/theme/Theme.kt
-    ~~~kt
-    package com.example.josparcoffee.ui.theme
-    
-    import android.app.Activity
-    import android.os.Build
-    import androidx.compose.foundation.isSystemInDarkTheme
-    import androidx.compose.material3.MaterialTheme
-    import androidx.compose.material3.darkColorScheme
-    import androidx.compose.material3.dynamicDarkColorScheme
-    import androidx.compose.material3.dynamicLightColorScheme
-    import androidx.compose.material3.lightColorScheme
-    import androidx.compose.runtime.Composable
-    import androidx.compose.ui.platform.LocalContext
-    
-    private val DarkColorScheme = darkColorScheme(
-        primary = Purple80,
-        secondary = PurpleGrey80,
-        tertiary = Pink80
-    )
-    
-    private val LightColorScheme = lightColorScheme(
-        primary = Purple40,
-        secondary = PurpleGrey40,
-        tertiary = Pink40
-    
-        /* Other default colors to override
-        background = Color(0xFFFFFBFE),
-        surface = Color(0xFFFFFBFE),
-        onPrimary = Color.White,
-        onSecondary = Color.White,
-        onTertiary = Color.White,
-        onBackground = Color(0xFF1C1B1F),
-        onSurface = Color(0xFF1C1B1F),
-        */
-    )
-    
-    @Composable
-    fun JosparCoffeeTheme(
-        darkTheme: Boolean = isSystemInDarkTheme(),
-        // Dynamic color is available on Android 12+
-        dynamicColor: Boolean = true,
-        content: @Composable () -> Unit
+    fun BottomBar(
+      
+          navController: NavController,
+      
+          currentRoute: String?,
+      
+          viewModel: MenuViewModel
+      
     ) {
-        val colorScheme = when {
-            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                val context = LocalContext.current
-                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            }
-    
-            darkTheme -> DarkColorScheme
-            else -> LightColorScheme
-        }
-    
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = Typography,
-            content = content
-        )
-    
-    }
-
-
-12. com.example.josparcoffee/theme/Type.kt
-    ~~~kt
-    package com.example.josparcoffee.ui.theme
-    
-    import androidx.compose.material3.Typography
-    import androidx.compose.ui.text.TextStyle
-    import androidx.compose.ui.text.font.FontFamily
-    import androidx.compose.ui.text.font.FontWeight
-    import androidx.compose.ui.unit.sp
-    
-    // Set of Material typography styles to start with
-    val Typography = Typography(
-        bodyLarge = TextStyle(
-            fontFamily = FontFamily.Default,
-            fontWeight = FontWeight.Normal,
-            fontSize = 16.sp,
-            lineHeight = 24.sp,
-            letterSpacing = 0.5.sp
-        )
-        /* Other default text styles to override
-        titleLarge = TextStyle(
-            fontFamily = FontFamily.Default,
-            fontWeight = FontWeight.Normal,
-            fontSize = 22.sp,
-            lineHeight = 28.sp,
-            letterSpacing = 0.sp
-        ),
-        labelSmall = TextStyle(
-            fontFamily = FontFamily.Default,
-            fontWeight = FontWeight.Medium,
-            fontSize = 11.sp,
-            lineHeight = 16.sp,
-            letterSpacing = 0.5.sp
-        )
-        */
-    )
-
-
-13. com.example.josparcoffee/MainActivity.kt
-    ~~~kt
-    package com.example.josparcoffee
-    
-    import android.os.Bundle
-    import androidx.activity.ComponentActivity
-    import androidx.activity.compose.setContent
-    import com.example.josparcoffee.navigation.AppNavigation
-    
-    class MainActivity : ComponentActivity() {
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-    
-            setContent {
-                AppNavigation()
-            }
-        }
-    }
-
-
-14. com.example.josparcoffee/ui/screen/checkout/CheckoutScreen.kt
-    ~~~kt
-      package com.example.josparcoffee.ui.screen.checkout
       
-      import androidx.compose.foundation.layout.*
-      import androidx.compose.foundation.lazy.LazyColumn
-      import androidx.compose.foundation.lazy.items
-      import androidx.compose.material.icons.Icons
-      import androidx.compose.material.icons.filled.ArrowBack
-      import androidx.compose.material3.*
-      import androidx.compose.runtime.*
-      import androidx.compose.ui.Modifier
-      import androidx.compose.ui.unit.dp
-      import com.example.josparcoffee.data.CartManager
-      import com.example.josparcoffee.navigation.*
+          val context = LocalContext.current
       
-      @OptIn(ExperimentalMaterial3Api::class)
-      @Composable
-      fun CheckoutScreen() {
       
-          val backStack = LocalBackStack.current
-          val cartItems = CartManager.cartItems
+          NavigationBar(
       
-          var showSuccess by remember { mutableStateOf(false) }
+              modifier = Modifier.height(56.dp),
       
-          Scaffold(
-              topBar = {
-                  TopAppBar(
-                      title = { Text("Checkout") },
-                      navigationIcon = {
-                          IconButton(onClick = {
-                              backStack.removeLastOrNull()
-                          }) {
-                              Icon(Icons.Default.ArrowBack, null)
-                          }
-                      }
-                  )
-              }
-          ) { padding ->
+    ) {
       
-              Column(
-                  modifier = Modifier
-                      .fillMaxSize()
-                      .padding(padding)
-              ) {
+              NavigationBarItem(
       
-                  // TITLE
-                  Text(
-                      text = "Ringkasan Pesanan",
-                      style = MaterialTheme.typography.headlineSmall,
-                      modifier = Modifier.padding(16.dp)
-                  )
+                  selected = currentRoute == "home",
       
-                  // LIST ITEM
-                  LazyColumn(
-                      modifier = Modifier
-                          .weight(1f)
-                          .padding(horizontal = 8.dp)
-                  ) {
-                      items(cartItems) { cartItem ->
+                  onClick = {
       
-                          val price = when (cartItem.variant) {
-                              "Hot" -> cartItem.item.priceHot
-                              "Ice" -> cartItem.item.priceIce
-                              else -> cartItem.item.price
-                          }?.toIntOrNull() ?: 0
+                      navController.navigate("home")
+                  },
       
-                          Card(
-                              modifier = Modifier
-                                  .fillMaxWidth()
-                                  .padding(vertical = 6.dp),
-                              elevation = CardDefaults.cardElevation(4.dp)
-                          ) {
-                              Column(modifier = Modifier.padding(12.dp)) {
+                  alwaysShowLabel = false,
       
-                                  Text(
-                                      text = cartItem.item.name,
-                                      style = MaterialTheme.typography.titleMedium
-                                  )
+                  icon = {
       
-                                  Spacer(modifier = Modifier.height(4.dp))
+                      Icon(
       
-                                  Text("Tipe: ${cartItem.variant}")
-                                  Text("Harga: Rp $price.000")
-                                  Text("Qty: ${cartItem.quantity}")
+                          imageVector = Icons.Default.Home,
       
-                                  Spacer(modifier = Modifier.height(6.dp))
+                          contentDescription = "Home"
+                      )
+                  }
+              )
       
-                                  Divider()
+              NavigationBarItem(
       
-                                  Spacer(modifier = Modifier.height(6.dp))
+                  selected = currentRoute == "cart",
       
-                                  Text(
-                                      text = "Subtotal: Rp ${price * cartItem.quantity}.000",
-                                      style = MaterialTheme.typography.bodyMedium
-                                  )
+                  onClick = {
+      
+                      navController.navigate("cart")
+                  },
+      
+                  alwaysShowLabel = false,
+      
+                  icon = {
+      
+                      BadgedBox(
+      
+                          badge = {
+      
+                              if (viewModel.cartItems.isNotEmpty()) {
+      
+                                  Badge {
+      
+                                      Text(
+                                          text = viewModel.cartItems.size.toString()
+                                      )
+                                  }
                               }
                           }
+      
+                      ) {
+      
+                          Icon(
+      
+                              imageVector = Icons.Default.ShoppingCart,
+      
+                              contentDescription = "Cart"
+                          )
                       }
                   }
+              )
       
-                  // TOTAL + BUTTON
-                  Card(
-                      modifier = Modifier
-                          .fillMaxWidth()
-                          .padding(16.dp),
-                      elevation = CardDefaults.cardElevation(8.dp)
-                  ) {
-                      Column(modifier = Modifier.padding(16.dp)) {
+              NavigationBarItem(
       
-                          Text(
-                              text = "Total Pembayaran",
-                              style = MaterialTheme.typography.labelLarge
-                          )
+                  selected = currentRoute == "tracking",
       
-                          Spacer(modifier = Modifier.height(4.dp))
+                  onClick = {
       
-                          Text(
-                              text = "Rp ${CartManager.getTotal()}.000",
-                              style = MaterialTheme.typography.headlineSmall
-                          )
+                      if (viewModel.hasActiveOrder) {
       
-                          Spacer(modifier = Modifier.height(12.dp))
+                          navController.navigate("tracking")
       
-                          Button(
-                              onClick = {
-                                  showSuccess = true
-                                  CartManager.cartItems.clear()
-                              },
-                              modifier = Modifier.fillMaxWidth()
-                          ) {
-                              Text("Bayar Sekarang")
-                          }
+                      } else {
+      
+                          Toast.makeText(
+      
+                              context,
+      
+                              "Tidak ada tracking order, lakukan order dulu ☕",
+      
+                              Toast.LENGTH_SHORT
+      
+                          ).show()
                       }
-                  }
-              }
-          }
+                  },
       
-          // DIALOG
-          if (showSuccess) {
-              AlertDialog(
-                  onDismissRequest = { showSuccess = false },
-                  title = { Text("Pembayaran Berhasil") },
-                  text = { Text("Terima kasih sudah memesan ☕") },
-                  confirmButton = {
-                      Button(onClick = {
-                          showSuccess = false
-                          backStack.clear()
-                          backStack.add(Routes.Home)
-                      }) {
-                          Text("Kembali ke Home")
-                      }
+                  alwaysShowLabel = false,
+      
+                  icon = {
+      
+                      Icon(
+      
+                          imageVector = Icons.Default.List,
+      
+                          contentDescription = "Tracking"
+                      )
                   }
               )
           }
       }
+19. MenuCard.kt
+20. CartScreen.kt
+21. CheckoutScreen.kt
+22. DetailScreen.kt
+23. HomeScreen.kt
+24. PaymentSuccessScreen.kt
+25. SplashScreen.kt
+26. SuccessScreen.kt
+27. TrackingScreen.kt
+28. Color.kt
+29. Theme.kt
+30. Type.kt
+31. MenuViewModel.kt
+32. MainActivity.kt
